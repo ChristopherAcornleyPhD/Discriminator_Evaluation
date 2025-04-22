@@ -1,7 +1,7 @@
 import tensorflow as tf
 from classifiers import DenseClassifier
-from layers.LinearReplacement import LinearReplacement
-from layers.EmptyReplacement import EmptyReplacement
+from layers.linear_replacement import LinearReplacement
+from layers.empty_replacement import EmptyReplacement
 
 class EmbeddingDNN(DenseClassifier):
     def __init__(self):

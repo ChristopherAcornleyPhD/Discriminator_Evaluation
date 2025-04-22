@@ -1,7 +1,7 @@
 import tensorflow as tf
 from classifiers import PoolingClassifier
-from layers.LinearReplacement import LinearReplacement
-from layers.EmptyReplacement import EmptyReplacement
+from layers.linear_replacement import LinearReplacement
+from layers.empty_replacement import EmptyReplacement
 
 class EmbeddingPooling(PoolingClassifier):
     def __init__(self):
