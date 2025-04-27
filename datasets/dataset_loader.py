@@ -1,8 +1,11 @@
 class DatasetLoader:
-    def __init__(self, options):
-        self.train_dataset_src = options.train_data_src
-        self.test_dataset_src = options.test_data_src
+    def __init__(self):
+        self.train_data = None
+        self.test_data = None
+        self.batch_size = -1
 
     def load(self):
         print("Do nothing")
         pass
+
+
