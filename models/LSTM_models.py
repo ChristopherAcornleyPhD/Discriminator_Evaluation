@@ -1,5 +1,5 @@
 import tensorflow as tf
-from classifiers import RecurrentClassifier
+from models.classifiers import RecurrentClassifier
 from layers.linear_replacement import LinearReplacement
 from layers.empty_replacement import EmptyReplacement
 
@@ -12,13 +12,16 @@ class EmbeddingLSTM(LSTMClassifier):
     def __init__(self):
         super(EmbeddingLSTM, self).__init__()
         self.embedding = tf.keras.layers.Embedding(101, 64)
+        self.model_name = "LSTM Embedding"
 
 class LinearLSTM(LSTMClassifier):
     def __init__(self):
         super(LinearLSTM, self).__init__()
         self.embedding = LinearReplacement(64)
+        self.model_name = "LSTM Linear"
 
 class EmptyLSTM(LSTMClassifier):
     def __init__(self):
         super(EmptyLSTM, self).__init__()
         self.embedding = EmptyReplacement()
+        self.model_name = "LSTM None"
