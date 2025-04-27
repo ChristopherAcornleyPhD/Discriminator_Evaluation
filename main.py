@@ -24,7 +24,10 @@ def setup_config(parser):
     parser.add_argument("--save_models", default=True, type=bool)
     parser.add_argument("--save_metrics", default=True, type=bool)
     parser.add_argument("--metrics_workbook_name", default="metrics_workbook.xlsx", type=str)
-    parser.add_argument("--epochs", default=2, type=int)
+    parser.add_argument("--epochs", default=5, type=int)
+    parser.add_argument("--training", default=True, type=bool)
+    parser.add_argument("--testing", default=True, type=bool)
+    parser.add_argument("--model_load_path", default="", type=str)
     return parser
 
 if __name__ == '__main__':
