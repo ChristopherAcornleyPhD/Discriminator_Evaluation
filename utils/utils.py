@@ -1,4 +1,5 @@
 import os
+from keras import backend as K
 
 def create_experiment_folder(opt):
     if not opt.save_models and not opt.save_metrics:
@@ -32,3 +33,6 @@ def create_experiment_folder(opt):
         print("Cannot create experiment folder")
         opt.save_models = False
         opt.save_metrics = False
+
+def calculate_F1Score(precision, recall):
+    return 2*((precision*recall)/(precision+recall+K.epsilon()))
