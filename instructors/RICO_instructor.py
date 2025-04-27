@@ -1,6 +1,7 @@
 import tensorflow as tf
 from instructors.instructor import Instructor
 from models.classifier_loss import discriminator_loss
+from utils.utils import calculate_F1Score
 import time
 import pandas as pd
 
@@ -10,8 +11,10 @@ class RICOInstructor(Instructor):
         self.all_training_losses = []
 
     def run(self, writer=None):
-        self.train(writer)
-        self.test()
+        if self.opt.training:
+            self.train(writer)
+        if self.opt.testing:
+            self.test(writer)
         if self.opt.save_models:
             self.save_model()
 
@@ -47,6 +50,52 @@ class RICOInstructor(Instructor):
         if self.opt.save_metrics or writer is not None:
             self.save_losses(writer)
 
+
+    def test(self, writer):
+        if not self.opt.training:
+            # Check if the folder to load models from is valid
+            # load model weights
+            # otherwise skip
+            pass
+
+        # # test model
+        predictions = []
+        testing_data = self.data.test_data["data"]
+        labels = self.data.test_data["labels"]
+        for item in testing_data:
+            predictions.append(self.classifier(item))
+
+        prediction_tensor = tf.concat(predictions,axis=1)
+        label_tensor = tf.expand_dims(tf.convert_to_tensor(labels), axis = 0)
+
+        # accuracy - TP
+        Accuracy = tf.keras.metrics.binary_accuracy(labels, prediction_tensor)
+        acc_metric = Accuracy.numpy()[0]
+
+        # recall
+        recall = tf.keras.metrics.Recall()
+        recall.update_state(label_tensor, prediction_tensor)
+        recall_metric = recall.result().numpy()
+
+        # precision
+        precision = tf.keras.metrics.Precision()
+        precision.update_state(label_tensor, prediction_tensor)
+        precision_metric = precision.result().numpy()
+
+        # f1
+        f1_metric = calculate_F1Score(precision_metric, recall_metric)
+
+        print("Model Name: {}\nAccuracy: {}\nRecall: {}\nPrecision: {}\nF1 Score: {}".format(self.classifier.model_name, acc_metric, recall_metric, precision_metric, f1_metric))
+
+        if self.opt.save_metrics or writer is not None:
+            self.data_to_save = {"Metric": ["Accuracy", "Recall", "Precision", "F1 Score"]}
+            self.data_to_save[self.classifier.model_name] = [acc_metric, recall_metric, precision_metric, f1_metric]
+            self.save_metrics(writer)
+
     def save_losses(self, writer):
         dataframe_losses = pd.DataFrame(data=self.all_training_losses)
         dataframe_losses.to_excel(writer, sheet_name=self.classifier.model_name)
+
+    def save_metrics(self, writer):
+        dataframe = pd.DataFrame.from_dict(self.data_to_save)
+        dataframe.to_excel(writer, sheet_name=self.classifier.model_name+'_metrics')    
