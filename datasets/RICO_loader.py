@@ -2,6 +2,7 @@ from datasets.dataset_loader import DatasetLoader
 from layers.max_layer import MaxLayer
 import os
 import time
+import random
 import numpy as np
 import tensorflow as tf
 
@@ -33,26 +34,52 @@ class RICOLoader(DatasetLoader):
             file.close()
         return np.array(file_data, dtype=object)
     
+    def generate_sample_data_batch(self, file_data, num_expands = 1):
+        disc_data = []
+        gen_data = []
+        for batch in file_data:
+            batch_disc, batch_gen = self.generate_sample_data(batch, num_expands=num_expands)
+            disc_data.append(batch_disc)
+            gen_data.append(batch_gen)
+        return disc_data, gen_data
+    
     def generate_sample_data(self, file_data, num_expands = 1):
         disc_data = []
         gen_data = []
 
-        for batch_iter in range(len(file_data)):
-            disc_batch = []
-            gen_batch = []
-            for item_iter in range(len(file_data[batch_iter])):
-                p_samples = file_data[batch_iter][item_iter]
-                tensor = tf.convert_to_tensor(p_samples)
-                for _ in range(num_expands):
-                    tensor = tf.expand_dims(tensor, axis=0)
-                disc_batch.append(tensor)
-                random_gen = np.random.uniform(0.0, 1.0, (1, len(file_data[batch_iter][item_iter]), 101))
-                pred = self.fake_generator(random_gen)
-                gen_batch.append(pred)
-            disc_data.append(disc_batch)  
-            gen_data.append(gen_batch)
+        for item_iter in range(len(file_data)):
+            p_samples = file_data[item_iter]
+            tensor = tf.convert_to_tensor(p_samples)
+            for _ in range(num_expands):
+                tensor = tf.expand_dims(tensor, axis=0)
+            disc_data.append(tensor)
+            random_gen = np.random.uniform(0.0, 1.0, (1, len(file_data[item_iter]), 101))
+            pred = self.fake_generator(random_gen)
+            gen_data.append(pred)
 
         return disc_data, gen_data
+    
+    def combine_testing_data(self, true_test, gen_test):
+        gen_length = len(gen_test)
+        true_length = len(true_test)
+        
+        if gen_length != true_length:
+            raise Exception("Generated and True samples do not match in size.")
+
+        data = true_test + gen_test
+
+        true_label = [1] * true_length
+        false_label = [0] * gen_length
+
+        labels = true_label + false_label
+
+        c = list(zip(data, labels))
+        random.shuffle(c)
+
+        data_shuffled, labels_shuffled = zip(*c)
+
+        return {"data" : data_shuffled, "labels" : labels_shuffled}
+
     
     def load(self):
         start_time = time.perf_counter()
@@ -63,12 +90,12 @@ class RICOLoader(DatasetLoader):
             files_per_batch = 100
             batch_size = int(len(raw_file_data)  / files_per_batch)
             file_data = np.array_split(raw_file_data, batch_size)
-            tester_data = np.array_split(raw_tester_data, batch_size)
+            #tester_data = np.array_split(raw_tester_data, batch_size)
 
-            disc_data_train, gen_data_train = self.generate_sample_data(file_data)
-            disc_data_test, gen_data_test = self.generate_sample_data(tester_data)
+            disc_data_train, gen_data_train = self.generate_sample_data_batch(file_data)
+            disc_data_test, gen_data_test = self.generate_sample_data(raw_tester_data)
             self.train_data = {"disc": disc_data_train, "gen": gen_data_train}
-            self.test_data = {"disc": disc_data_test, "gen": gen_data_test}
+            self.test_data = self.combine_testing_data(disc_data_test, gen_data_test)
             self.batch_size = batch_size
 
         else:
