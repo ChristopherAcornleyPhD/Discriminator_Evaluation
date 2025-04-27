@@ -48,7 +48,7 @@ class RICOInstructor(Instructor):
                 print('Finished epoch {}. Time Taken: {:.0f} seconds'.format(epoch + 1, timer_end - timer_start))
 
         if self.opt.save_metrics or writer is not None:
-            self.save_losses(writer)
+            writer.save_losses(self.classifier.model_name, self.all_training_losses)
 
 
     def test(self, writer):
@@ -88,14 +88,4 @@ class RICOInstructor(Instructor):
         print("Model Name: {}\nAccuracy: {}\nRecall: {}\nPrecision: {}\nF1 Score: {}".format(self.classifier.model_name, acc_metric, recall_metric, precision_metric, f1_metric))
 
         if self.opt.save_metrics or writer is not None:
-            self.data_to_save = {"Metric": ["Accuracy", "Recall", "Precision", "F1 Score"]}
-            self.data_to_save[self.classifier.model_name] = [acc_metric, recall_metric, precision_metric, f1_metric]
-            self.save_metrics(writer)
-
-    def save_losses(self, writer):
-        dataframe_losses = pd.DataFrame(data=self.all_training_losses)
-        dataframe_losses.to_excel(writer, sheet_name=self.classifier.model_name)
-
-    def save_metrics(self, writer):
-        dataframe = pd.DataFrame.from_dict(self.data_to_save)
-        dataframe.to_excel(writer, sheet_name=self.classifier.model_name+'_metrics')    
+            writer.save_metrics(self.classifier.model_name, [acc_metric, recall_metric, precision_metric, f1_metric])
