@@ -1,7 +1,7 @@
 import argparse
 from instructors.RICO_instructor import RICOInstructor
 from datasets.RICO_loader import RICOLoader
-from utils.metrics import Metrics
+from utils.RICO_metric_writer import RICOMetricWriter
 
 from models.BiLSTM_models import EmptyBiLSTM, LinearBiLSTM, EmbeddingBiLSTM
 from models.LSTM_models import EmptyLSTM, LinearLSTM, EmbeddingLSTM
@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
     create_experiment_folder(opt)
 
-    metrics = Metrics(opt)
+    RICO_writer = RICOMetricWriter(opt)
 
     data_loader = RICOLoader(opt)
     dataset = data_loader.load()
@@ -74,9 +74,9 @@ if __name__ == '__main__':
 
     for instructor in model_list:
         try:
-            instructor.run(metrics.writer)
+            instructor.run(RICO_writer)
         except Exception as e:
             print(e)
             print("Cannot run " + instructor.name)
 
-    metrics.close()
+    RICO_writer.close()
