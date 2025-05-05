@@ -1,5 +1,4 @@
 import tensorflow as tf
-import os
 
 class Instructor:
     def __init__(self, opt, data, classifier = None, name = ""):
@@ -18,4 +17,5 @@ class Instructor:
         pass
 
     def save_model(self):
-        self.classifier.save_weights(os.path.join(self.opt.model_folder, self.classifier.model_name))
+        print("Saving Model")
+        pass
