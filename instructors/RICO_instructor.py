@@ -3,7 +3,7 @@ from instructors.instructor import Instructor
 from models.classifier_loss import discriminator_loss
 from utils.utils import calculate_F1Score
 import time
-import pandas as pd
+import os
 
 class RICOInstructor(Instructor):
     def __init__(self, opt, data, classifier = None, name=""):
@@ -11,11 +11,11 @@ class RICOInstructor(Instructor):
         self.all_training_losses = []
 
     def run(self, writer=None):
-        if self.opt.training:
+        if self.opt.RICO_training:
             self.train(writer)
-        if self.opt.testing:
+        if self.opt.RICO_testing:
             self.test(writer)
-        if self.opt.save_models:
+        if self.opt.save_models and self.opt.RICO_training:
             self.save_model()
 
     def train(self, writer):
@@ -52,12 +52,6 @@ class RICOInstructor(Instructor):
 
 
     def test(self, writer):
-        if not self.opt.training:
-            # Check if the folder to load models from is valid
-            # load model weights
-            # otherwise skip
-            pass
-
         # # test model
         predictions = []
         testing_data = self.data.test_data["data"]
@@ -89,3 +83,6 @@ class RICOInstructor(Instructor):
 
         if self.opt.save_metrics or writer is not None:
             writer.save_metrics(self.classifier.model_name, [acc_metric, recall_metric, precision_metric, f1_metric])
+
+    def save_model(self):
+        self.classifier.save_weights(os.path.join(self.opt.RICO_model_folder, self.classifier.model_name))
