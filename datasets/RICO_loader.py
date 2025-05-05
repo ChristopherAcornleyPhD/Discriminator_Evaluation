@@ -11,6 +11,8 @@ class RICOLoader(DatasetLoader):
         super(RICOLoader, self).__init__()
         self.opt = options
         self.fake_generator = MaxLayer()
+        self.lowest_lines = 10000000
+        self.highest_lines = 0
 
     def load_train_data_from_folder(self, target_folder):
         file_data = []
@@ -19,6 +21,11 @@ class RICOLoader(DatasetLoader):
             file_name = target_folder+'\\'+file_name
             file = open(file_name, 'r')
             fd = []
+            file_length = len(file.readlines())
+            if file_length > self.highest_lines:
+                self.highest_lines = file_length
+            if file_length < self.lowest_lines:
+                self.lowest_lines = file_length
             for line in file.readlines():
                 line_list = line.split(' ')
                 if (len(line_list) != 6) or (line_list[0] == '#'):
@@ -82,15 +89,15 @@ class RICOLoader(DatasetLoader):
 
     
     def load(self):
+        print("Loading RICO dataset...")
         start_time = time.perf_counter()
-        if os.path.exists(self.opt.train_src) and os.path.exists(self.opt.test_src):
-            raw_file_data = self.load_train_data_from_folder(self.opt.train_src)
-            raw_tester_data = self.load_train_data_from_folder(self.opt.test_src)
+        if os.path.exists(self.opt.RICO_train_src) and os.path.exists(self.opt.RICO_test_src):
+            raw_file_data = self.load_train_data_from_folder(self.opt.RICO_train_src)
+            raw_tester_data = self.load_train_data_from_folder(self.opt.RICO_test_src)
 
             files_per_batch = 100
             batch_size = int(len(raw_file_data)  / files_per_batch)
             file_data = np.array_split(raw_file_data, batch_size)
-            #tester_data = np.array_split(raw_tester_data, batch_size)
 
             disc_data_train, gen_data_train = self.generate_sample_data_batch(file_data)
             disc_data_test, gen_data_test = self.generate_sample_data(raw_tester_data)
