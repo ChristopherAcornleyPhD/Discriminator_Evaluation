@@ -21,12 +21,6 @@ def create_experiment_folder(opt):
             else:
                 os.mkdir(experiment_folder_path)
                 opt.experiment_folder = experiment_folder_path
-
-                if opt.save_models:
-                    model_output_path = os.path.join(experiment_folder_path, opt.model_folder)
-                    os.mkdir(model_output_path)
-                    opt.model_folder = model_output_path
-
                 return
             
     except:
