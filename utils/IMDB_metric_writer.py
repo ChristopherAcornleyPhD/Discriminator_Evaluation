@@ -1,12 +1,12 @@
 from utils.metric_writer import MetricWriter
 import pandas as pd
 
-class RICOMetricWriter(MetricWriter):
+class IMDBMetricWriter(MetricWriter):
     def __init__(self, opt):
-        super(RICOMetricWriter, self).__init__(opt)
+        super(IMDBMetricWriter, self).__init__(opt)
         start_data = {"Metric": ["Accuracy", "Recall", "Precision", "F1 Score"]}
         self.data_to_save = {"losses": pd.DataFrame(), "metrics": pd.DataFrame.from_dict(start_data)}
-        self.workbook_name = self.opt.RICO_metrics_workbook_name
+        self.workbook_name = self.opt.IMDB_metrics_workbook_name
         self.prepare_workbook()
 
     def save_losses(self, model_name, data):

@@ -5,9 +5,12 @@ class MetricWriter():
     def __init__(self, opt):
         self.opt = opt
         self.data_to_save = dict()
+        self.workbook_name = ""
+
+    def prepare_workbook(self):
         if self.opt.save_metrics:
             try:
-                self.workbook_path = os.path.join(self.opt.experiment_folder, self.opt.metrics_workbook_name)
+                self.workbook_path = os.path.join(self.opt.experiment_folder, self.workbook_name)
                 self.writer = pd.ExcelWriter(self.workbook_path)
             except Exception as e:
                 print(e)
